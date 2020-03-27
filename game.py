@@ -1,7 +1,7 @@
 import pygame
 import time
 import numpy as np
-
+gravity =0
 pygame.init()
 gamewin = pygame.display.set_mode((650,400))
 pygame.display.set_caption("flappy bird ")
@@ -51,22 +51,26 @@ class birdy(pygame.sprite.Sprite):
 		self.hitbox= (self.x,self.y,self.width,self.height)
 		self.rect = pygame.Rect(self.hitbox)
 		
-
 	def draw(self,win,obj):
 		if self.jumpcount+1 > 27:
 			self.jumpcount =0
+
 		if self.space:
-			win.blit(obj[self.jumpcount//3],(self.x,self.y))
+
+			win.blit(pygame.transform.rotate(obj[self.jumpcount//3],6%360),(self.x,self.y))
+			#pygame.draw.rect(gamewin,(255,0,0),self.hitbox,2)
+
 			
 
 		else:
-			win.blit(obj[0],(self.x,self.y))
-		self.hitbox= (self.x,self.y,self.width,self.height)
-
-		pygame.draw.rect(gamewin,(255,0,0),self.hitbox,2)
-		self.rect = pygame.Rect(self.hitbox)
+	
+			win.blit(pygame.transform.rotate(obj[self.jumpcount//3],-6%360),(self.x,self.y))
 		
+			self.hitbox= (self.x,self.y,self.width,self.height)
 
+			#pygame.draw.rect(gamewin,(255,0,0),self.hitbox,2)
+			self.rect = pygame.Rect(self.hitbox)
+	
 
 		self.jumpcount +=1
 
@@ -79,7 +83,7 @@ class piper(pygame.sprite.Sprite):
 		self.box_x =box_x
 		self.box_y = box_y
 		self.bxuppery = bxuppery
-		self.hitbox= (self.box_x+20,self.box_y+20,64,64)
+		self.hitbox= (self.box_x,self.box_y,64,64)
 		self.rect = pygame.Rect(self.hitbox)
 		self.hitboxup= (self.box_x,self.box_y-self.bxuppery,self.width,self.height-180)
 
@@ -91,8 +95,8 @@ class piper(pygame.sprite.Sprite):
 		self.hitboxup= (self.box_x,self.box_y-self.bxuppery,self.width,self.height-180)
 
 
-		pygame.draw.rect(gamewin,(255,0,0),self.hitbox,2)
-		pygame.draw.rect(gamewin,(255,0,0),self.hitboxup,2)
+		#pygame.draw.rect(gamewin,(255,0,0),self.hitbox,2)
+		#pygame.draw.rect(gamewin,(255,0,0),self.hitboxup,2)
 
 		self.rect = pygame.Rect(self.hitbox)
 		
@@ -101,13 +105,13 @@ class piper(pygame.sprite.Sprite):
 
 
 
-
-
+bird = birdy(20,200,34,26)
 
 def redrawgame():
 
 	gamewin.blit(bg,(0,0))
 	bird.draw(gamewin,play)
+
 	if pipe:
  		pipspawn1.draw(gamewin,pipes,flipped_pipes)
  		pipspawn2.draw(gamewin,pipes,flipped_pipes)
@@ -120,29 +124,24 @@ def redrawgame():
 	pygame.display.update()
 
 
-box_x = 660
-box_x2 = box_x + 200
-box_x3 = box_x2 + 200
-box_x4 = box_x3 +200
+box_x = 740
+box_x2 = box_x + 250
+box_x3 = box_x2 + 250
+box_x4 = box_x3 +250
 
 
 rin = True 
+upperboxy = 432
 
+collidedpipe = False
 box_y1 = np.random.randint(low=100,high=380)
 box_y2 = np.random.randint(low=100,high=380)
 box_y3 = np.random.randint(low=100,high=380)
 box_y4 = np.random.randint(low=100,high=380)
-pipspawn1=piper(box_x, box_y1,420,52,500)
-pipspawn2=piper(box_x2, box_y2,420,52,500)
-pipspawn3=piper(box_x3, box_y3,420,52,500)
-pipspawn4=piper(box_x4, box_y4,420,52,500)
-
-bird = birdy(20,200,34,26)
-
-gravity= 1
-score= 0
-collidedpipe = False
-
+pipspawn1=piper(box_x, box_y1,upperboxy,52,500)
+pipspawn2=piper(box_x2, box_y2,upperboxy,52,500)
+pipspawn3=piper(box_x3, box_y3,upperboxy,52,500)
+pipspawn4=piper(box_x4, box_y4,upperboxy,52,500)
 while rin:
 	pygame.time.delay(30)
 	for event in pygame.event.get():
@@ -150,49 +149,51 @@ while rin:
 			pygame.quit()
 			quit()
 	keys = pygame.key.get_pressed()
-	if keys[pygame.K_SPACE] :
+	if keys[pygame.K_UP] :
+
 		if collidedpipe == False:
-			bird.y-= 20
+			bird.y-= 25
 			bird.space = True
-			gravity = 1
+			gravity = 7
+
 
 	if bird.x < 220:
 		bird.x+=2
 	if collidedpipe == False:
-		bird.y+=5 * gravity
-		gravity+= 0.2
+		bird.y+=1/2 * gravity 
+		pygame.time.delay(50)
+		gravity +=1.3
+
 
 	if bird.y > 380:
-		pygame.quit()
-		quit()
+		collidedpipe = True
 
 	if bird.x > 120:
 		pipe = True
 		if collidedpipe == False:
-			pipspawn1.box_x -= 5
-			pipspawn2.box_x -= 5
-			pipspawn3.box_x -= 5
-			pipspawn4.box_x -= 5
+			pipspawn1.box_x -= 10
+			pipspawn2.box_x -= 10
+			pipspawn3.box_x -= 10
+			pipspawn4.box_x -= 10
 
 	if pipspawn1.box_x <- 80:	
-		pipspawn1.box_x= 680
+		pipspawn1.box_x= 880
 		pipspawn1.box_y =  np.random.randint(low=100,high=380)
-		score+=1
+		
 		
 	if pipspawn2.box_x <- 80:	
-		pipspawn2.box_x= 680
+		pipspawn2.box_x= 880
 		pipspawn2.box_y =  np.random.randint(low=100,high=380)
-		score+=1
+	
 
 	if pipspawn3.box_x <- 80:	
-		pipspawn3.box_x= 680
+		pipspawn3.box_x=880
 		pipspawn3.box_y =  np.random.randint(low=100,high=380)
-		score+=1
 
 	if pipspawn4.box_x <- 80:	
-		pipspawn4.box_x= 680
+		pipspawn4.box_x= 880
 		pipspawn4.box_y =  np.random.randint(low=100,high=380)
-		score+=1
+	
 
 	# if score>1:
 	# 	print("score is",score+1)
@@ -214,16 +215,20 @@ while rin:
 	if(pygame.sprite.collide_rect(bird,pipspawn4)):
 		collidedpipe = True
 	if collidedpipe:
-		message_display("game over")
-		pipspawn1=piper(box_x, box_y1,420,52,500)
-		pipspawn2=piper(box_x2, box_y2,420,52,500)
-		pipspawn3=piper(box_x3, box_y3,420,52,500)
-		pipspawn4=piper(box_x4, box_y4,420,52,500)
+		message_display("Game over")
+		box_y1 = np.random.randint(low=100,high=380)
+		box_y2 = np.random.randint(low=100,high=380)
+		box_y3 = np.random.randint(low=100,high=380)
+		box_y4 = np.random.randint(low=100,high=380)
+		pipspawn1=piper(box_x, box_y1,upperboxy,52,500)
+		pipspawn2=piper(box_x2, box_y2,upperboxy,52,500)
+		pipspawn3=piper(box_x3, box_y3,upperboxy,52,500)
+		pipspawn4=piper(box_x4, box_y4,upperboxy,52,500)
 
 		bird = birdy(20,200,34,26)
 		collidedpipe = False
-
-		
+	
 	redrawgame()
+	bird.space = False
 
 pygame.quit()
